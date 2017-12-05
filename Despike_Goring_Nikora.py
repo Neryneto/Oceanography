@@ -111,7 +111,7 @@ def PhaseSpaceDespike1d(vel):
         numberLoop +=1
         print ("Number of iteration = ", numberLoop-1)
 
-    vel = vel + np.nanmean(vel)
+    vel = vel + f_mean
     
     return (firstDerivative, secondDerivative, vel, theta, universalThreshold)
 
