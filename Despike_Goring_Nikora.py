@@ -92,7 +92,7 @@ def PhaseSpaceDespike1d(vel):
 
     universalThreshold = np.sqrt(2 * np.log(len(vel)))
 
-    while (n_out > 0 & numberLoop <= numberMaxIteration):
+    while (n_out != 0 & numberLoop <= numberMaxIteration):
 
         # Step 0 - accumulate offset value at each step
         f_mean = f_mean + np.nanmean(vel)
