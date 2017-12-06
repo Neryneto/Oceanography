@@ -29,7 +29,7 @@ spikes.
    
 Spikes are returned as nan values
 
-WARNING: Remember to replace velx, velx and velz in the final lines for
+WARNING: Remember to replace velx, vely and velz in the final lines for
 your vector of X, Y and Z velocities
 """
 
