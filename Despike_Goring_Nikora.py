@@ -23,19 +23,14 @@ spikes.
  SYNTAX: cleandata = PhaseSpaceDespike(rawdata, varargin)
 
  INPUT:
-   velx    : input x-direction velocity component
-   vely    : input y-direction velocity component
-   velz    : input z-direction velocity component
-   
+   velx    : input velocity component   
 Spikes are returned as nan values
 
-WARNING: Remember to replace velx, vely and velz in the final lines for
-your vector of X, Y and Z velocities
 """
 
 import numpy as np
-import math
-
+import warnings
+warnings.filterwarnings("ignore",category =RuntimeWarning)
 
 def ExcludeOutlierEllipsoid3D(xi, yi, zi, theta, universalThreshold):
     # This function excludes the points outside of ellipsoid in 2D domain
@@ -51,31 +46,30 @@ def ExcludeOutlierEllipsoid3D(xi, yi, zi, theta, universalThreshold):
         Y = yi
         Z = xi * ((-1) * math.sin(theta)) + zi * (math.cos(theta))
 
-    a = universalThreshold * np.nanstd(X, ddof=1)
-    b = universalThreshold * np.nanstd(Y, ddof=1)
-    c = universalThreshold * np.nanstd(Z, ddof=1)
-    m = 0
+    nanstdX = np.nanstd(X, ddof=1)
+    nanstdY = np.nanstd(Y, ddof=1)
+    nanstdZ = np.nanstd(Z, ddof=1)
+    
+    a = universalThreshold * nanstdX
+    b = universalThreshold * nanstdY
+    c = universalThreshold * nanstdZ
 
-    x2 = [a * b * c * X[i] / np.sqrt((a * c * Y[i])**2 + b**2 * (
-        c**2 * (X[i])**2 + a**2 * (Z[i])**2)) for i in range(len(X))]
-    y2 = [a * b * c * Y[i] / np.sqrt((a * c * Y[i])**2 + b**2 * (
-        c**2 * X[i]**2 + a**2 * Z[i]**2)) for i in range(len(X))]
+    x2 = a * b * c * X / np.sqrt((a * c * Y)**2 + b**2 * (
+        c**2 * (X)**2 + a**2 * (Z)**2))
+    y2 = a * b * c * Y / np.sqrt((a * c * Y)**2 + b**2 * (
+        c**2 * X**2 + a**2 * Z**2))
     zt = c**2 * (1 - (x2 / a)**2 - (y2 / b)**2)
-    i = 0
-    z2 = []
-    for i in range(len(Z)):
-        z2.append((-1 if Z[i] < 0 else 1) * np.sqrt(zt[i]))
+    z2 = np.sign(Z) * np.sqrt(zt)
 
     # check outlier for the ellipsoid
     distance = (np.square(x2) + np.square(y2) + np.square(z2)) - \
         (np.square(xi) + np.square(yi) + np.square(zi))
 
     ind = np.argwhere(distance < 0)
-    m = len(ind)
     xp = []
     yp = []
     zp = []
-    coef = [a, b, c]
+    
     xp.append(xi[ind])
     yp.append(yi[ind])
     zp.append(zi[ind])
@@ -119,17 +113,7 @@ def PhaseSpaceDespike1d(vel):
 
         # End of the loop
         numberLoop += 1
-        print("Number of iteration = ", numberLoop - 1)
 
-    vel = vel + np.nanmean(vel)
+    despikeVel = vel + f_mean
 
-    return (firstDerivative, secondDerivative, vel, theta, universalThreshold)
-
-
-firstDerivativeX, secondDerivativeX, velx, thetaX, universalThreshold = PhaseSpaceDespike1d(
-    velx)
-firstDerivativeY, secondDerivativeY, vely, thetaY, universalThreshold = PhaseSpaceDespike1d(
-    vely)
-firstDerivativeZ, secondDerivativeZ, velz, thetaZ, universalThreshold = PhaseSpaceDespike1d(
-    velz)
-
+    return (despikeVel)
